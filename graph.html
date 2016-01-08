@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+circle.others{
+
+ fill: red;    
+}
+
+div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 60px;					
+    height: 28px;					
+    padding: 2px;				
+    font: 12px sans-serif;		
+    background: lightsteelblue;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
+
+
+text {
+  font: 14px sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+
+
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+</style>
+
+<head>
+<title>Who Played With Whom</title>
+</head>
+
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+
+
+
+<script>
+
+//Size of region to render on
+var width = 2048,
+    height = 1536;
+
+
+//D3 force directed layout
+//Try playing with the charge and link distance
+var force = d3.layout.force()
+    .charge(-1600)
+    .linkDistance(160)
+    .size([width, height]);
+
+//var tip = d3.tip()
+//  .attr('class', 'd3-tip')
+//  .offset([-10, 0])
+//  .html(return "11");
+  
+
+
+//Add our canvas
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+
+//svg.call(tip);
+
+var color = d3.scale.category20();
+
+//Select the data ;)
+d3.json("afc.json", function(error, graph) {
+  
+  //document.write(JSON.stringify(graph));
+  force
+      .nodes(graph.nodes)
+      .links(graph.links)
+      .start();
+
+  
+var text = svg.append("g").selectAll("text")
+    .data(graph.nodes)
+  .enter().append("text")
+    .attr("x", 12)
+    .attr("y", ".31em")
+    .text(function(d) { if (d.appearances >= 250) return d.name; });
+
+
+
+//Add the links
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+      .enter().append("line")
+      .attr("class", "link")
+      .style("stroke-width", function(d) { return 80*Math.sqrt(d.value); });
+
+
+
+
+
+
+
+
+
+//Add the nodes
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+      .enter().append("circle")
+      .attr("class", "node")
+      .attr("r", function(d){return Math.sqrt(d.goals)})
+      .call(force.drag)
+      .style("fill", function(d){return color(d.position)});
+
+  //node.on('mouseover', tip.show)
+   //       .on('mouseout', tip.hide);
+
+	  
+  node.append("title")
+      .text(function(d) {return d.name;});
+
+  
+  
+  var div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
+  node.on("mouseover", function(d) {		
+            div.transition()		
+                .duration(200)		
+                .style("opacity", .9);		
+            div	.html(d.name);
+            })					
+        .on("mouseout", function(d) {		
+            div.transition()		
+                .duration(500)		
+                .style("opacity", 0);	
+        });
+
+  node.on("dblclick", function(d)
+                      {
+                          if(d.fixed == false)
+                          {
+                              d.fixed = true;                                                                                                         d3.select(this).style("fill", "black");
+                          }
+                          else
+                          {
+                              d.fixed = false;
+                              d3.select(this).style("fill", function(d){return color(d.position)});
+                          }
+                      })
+                         
+    
+//Update stuff for animation:
+//   This takes the physics simulation for the force directed graph and
+//   sets the location of the nodes and edges to the new positions
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+
+    text.attr("transform", transform);
+  });
+});
+
+function transform(d) {
+  return "translate(" + d.x + "," + d.y + ")";
+}
+
+</script>
