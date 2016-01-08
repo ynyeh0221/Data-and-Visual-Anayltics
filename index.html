@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)file:///C:/Users/Juliana%20Yeh/Desktop/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	        <meta charset="utf-8">
+	        <title>D3 Test</title>
+	        <script type="text/javascript" src="./index_files/d3.js"></script>
+	        <style type="text/css">
+	            div.bar {
+	        	        display: inline-block;
+	        		width: 20px;
+	        		height: 75px;
+	        		//background-color: red;
+	        	    }
+	        </style>
+	    </head>
+	    <body>
+	    	<h1>Yi-Nung Yeh</h1>
+	        <script type="text/javascript">
+
+		//d3.select("body").append("p").text("New paragraph!");
+
+
+	  	var dataset = [ 5, 10, 15, 20, 25 ];
+
+		d3.select("body").selectAll("div")
+		  .data(dataset)
+		  .enter()
+		  .append("div")
+	          .attr("class", "bar")
+
+		  .style("height", function(d) {
+						   var barHeight = d * 5; //scale up by factor of 5
+						   return barHeight + "px";
+					       })
+	
+		  .style("margin-right", function(d) { 
+                                                         return "2px";
+					             })
+
+                  .style("background", function(d) {                                                      
+if(d==5)                                                   
+return "red";
+else if(d==10)
+return "blue";
+else if(d==15)
+return "yellow";
+else if(d==20)
+return "black";
+else
+return "green";
+                                                   });
+                  
+
+                  
+	        </script><div class="bar" style="height: 25px; margin-right: 2px; background: red;"></div><div class="bar" style="height: 50px; margin-right: 2px; background: blue;"></div><div class="bar" style="height: 75px; margin-right: 2px; background: yellow;"></div><div class="bar" style="height: 100px; margin-right: 2px; background: black;"></div><div class="bar" style="height: 125px; margin-right: 2px; background: green;"></div>
+	    
+	  
+
+</body></html>
