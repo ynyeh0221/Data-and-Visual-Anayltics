@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+body {
+  font: 10px sans-serif;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.point {
+  fill: steelblue;
+  stroke: #000;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 12px;
+}
+
+
+
+</style>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script>
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+var sepalLength = d3.scale.linear()
+    .range([0, width]);
+var sepalWidth = d3.scale.linear()
+    .range([height, 0]);
+var petalLength = d3.scale.linear()
+    .range([0, width]);
+var petalWidth = d3.scale.linear()
+    .range([height, 0]);
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var svg2 = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+var color = d3.scale.category10();
+
+d3.tsv("iris.tsv", function(error, data) {
+  if (error) throw error;
+
+
+//document.write(JSON.stringify(data));
+
+  // Compute the scales’ domains.
+  sepalLength.domain(d3.extent(data, function(d) { return d.sepalLength; })).nice();
+  sepalWidth.domain(d3.extent(data, function(d) { return d.sepalWidth; })).nice();
+
+  // Add the x-axis.
+  svg.append("g")
+      .attr("class", "sepal Length")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.svg.axis().scale(sepalLength).orient("bottom"))
+      .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Sepal Length");
+
+  // Add the y-axis.
+  svg.append("g")
+      .attr("class", "sepal Width")
+      .call(d3.svg.axis().scale(sepalWidth).orient("left"))
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left)
+      .attr("x", 0 - (height/2))
+      .attr("dy", "1em")
+      .style("text-anchor" , "middle")
+      .text("Sepal Width");
+
+
+  // Add the points!
+  svg.selectAll(".point")
+      .data(data)
+      .enter().append("path")
+      .attr("class", "point")
+      .attr("d", d3.svg.symbol().type( function(d) { 
+if(d.species == "setosa")
+    return "diamond";
+else if (d.species == "versicolor")
+    return "triangle-up";
+else
+    return "circle";
+
+}).size( function(d) { return 20*Math.sqrt(d.sepalLength);}))
+      .attr("transform", function(d) { return "translate(" + sepalLength(d.sepalLength) + "," + sepalWidth(d.sepalWidth) + ")";
+})
+      .style("fill", function(d){
+              return color(d.species);
+});
+
+
+  // Compute the scales’ domains.
+  petalLength.domain(d3.extent(data, function(d) { return d.petalLength; })).nice();
+  petalWidth.domain(d3.extent(data, function(d) { return d.petalWidth; })).nice();
+
+  // Add the x-axis.
+  svg2.append("g")
+      .attr("class", "petal Length")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.svg.axis().scale(petalLength).orient("bottom"))
+      .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Petal Length");
+
+
+  // Add the y-axis.
+  svg2.append("g")
+      .attr("class", "petal Width")
+      .call(d3.svg.axis().scale(petalWidth).orient("left"))
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left)
+      .attr("x", 0 - (height/2))
+      .attr("dy", "1em")
+      .style("text-anchor" , "middle")
+      .text("Petal Width");
+
+
+  // Add the points!
+  svg2.selectAll(".point")
+      .data(data)
+    .enter().append("path")
+      .attr("class", "point")
+      .attr("d", d3.svg.symbol().type( function(d) { 
+if(d.species == "setosa")
+    return "diamond";
+else if (d.species == "versicolor")
+    return "triangle-up";
+else if (d.species == "virginica")
+    return "circle";
+
+}).size( function(d) { return 20*Math.sqrt(d.petalLength)}))
+  .attr("transform", function(d) { return "translate(" + petalLength(d.petalLength) + "," + petalWidth(d.petalWidth) + ")";
+})
+   .style("fill", function(d){
+              return color(d.species);
+});
+
+
+var legend = svg.selectAll(".legend")
+      .data(color.domain())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color);
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+
+
+var legend2 = svg2.selectAll(".legend")
+      .data(color.domain())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend2.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color);
+
+  legend2.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+
+
+
+
+});
+
+</script>
