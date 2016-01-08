@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<meta >  <style>
+body {
+  font: 12px sans-serif;
+}
+
+    h2{
+      margin:10px;
+    }
+    button{
+      border:none;
+      background:#ddd;
+    }
+    select{
+      margin:0 0 10px 5px;
+      font-size:16px;
+    }
+    #menu{
+      margin:0 0 12px 12px ;
+    }
+
+</style>
+<body>
+
+<br>
+<br>
+<h1><font color="#FF0000">Please refresh this page before you select the next year.</font></h1>
+<br>
+<h2>Please select a year:</h2>
+<form name = "F">
+<select name="yy" id="yyy" onChange="changed(this)">
+  <option value="">Select</option>
+  <option value="2005">2005</option>
+  <option value="2006">2006</option> 
+  <option value="2007">2007</option>
+  <option value="2008">2008</option>
+  <option value="2009">2009</option> 
+  <option value="2010">2010</option>
+  <option value="2011">2011</option>
+  <option value="2012">2012</option> 
+  <option value="2013">2013</option>
+  <option value="2014">2014</option>
+</select>
+</form>
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script>
+
+var margin = {top: 40, right: 20, bottom: 30, left: 40},
+    width = 1300 - margin.left - margin.right,
+    height = 2000 - margin.top - margin.bottom;
+
+
+
+
+
+var s = d3.select('body').append('svg')
+          .attr({
+            'width':1200,
+            'height':height/5
+          }).style({
+            'border':'1px solid #aaa'
+          });
+
+var s2 = d3.select('body').append('svg')
+          .attr({
+            'width':1200,
+            'height':height/2
+          }).style({
+            'border':'1px solid #aaa'
+          });
+
+
+var rect = s.append('g')
+            .attr({
+              'id':'rect'
+            });
+
+
+
+var rect2 = s2.append('g')
+            .attr({
+              'id':'rect'
+            });
+
+var rect3 = s2.append('g')
+            .attr({
+              'id':'rect'
+            });
+
+var rect4 = s2.append('g')
+            .attr({
+              'id':'rect'
+            });
+
+var rect5 = s2.append('g')
+            .attr({
+              'id':'rect'
+            });
+
+var rect6 = s2.append('g')
+            .attr({
+              'id':'rect'
+            });
+
+var num = s.append('g')
+            .attr({
+              'id':'num'
+            });
+
+
+
+var wid = d3.scale.linear().domain([0,200000])
+    .range([150, width-margin.right]);
+
+var wid2 = d3.scale.linear().domain([0,160000])
+    .range([150, width-margin.right]);
+
+
+
+var origin_country = ["Afghanistan", "Eritrea", "Gambia", "Iran (Islamic Rep. of)", "Iraq", "Mali", "Russian Federation", "Somalia", "Serbia and Kosovo (S/RES/1244 (1999))", "Syrian Arab Rep."];
+
+
+var wid3 = d3.scale.ordinal().domain(origin_country).range([105, 125, 145, 165, 185, 205, 225, 245, 265, 285,366]);
+
+
+
+
+var wid4 = d3.scale.ordinal().domain(origin_country).range([125,205,285,365,445,525,605,685,765,845,926]);
+
+
+
+
+var axisX = d3.svg.axis()
+      .scale(wid)
+      .orient("bottom");
+
+
+var axisX2 = d3.svg.axis()
+      .scale(wid2)
+      .orient("bottom");
+
+      
+var axisY = d3.svg.axis()
+      .scale(wid3)
+      .orient("left");
+
+
+var axisY2 = d3.svg.axis()
+      .scale(wid4)
+      .orient("left");
+
+      
+
+s.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + 360 + ")")
+      .call(axisX)
+      .append("text")
+      .attr("class", "label")
+      .attr("x", width-2.5*margin.right)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("# Refugees");
+
+
+
+s.append("g")
+      .attr("transform", "translate(" + 150 + ",0)")
+      .call(axisY)      
+      .append("text")
+      .attr("y", 70)
+      .attr("x", 0)
+      .attr("dy", "1em")
+      .style("text-anchor" , "middle")
+      .text("Origin Country");
+
+
+
+
+s2.append('g')
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + 920 + ")")
+      .call(axisX2)
+      .append("text")
+      .attr("class", "label")
+      .attr("x", width-2.5*margin.right)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("# Refugees");
+
+
+
+
+s2.append("g")
+      .attr("transform", "translate(" + 150 + ",0)")
+      .call(axisY2)
+      .append("text")
+      .attr("y", 70)
+      .attr("x", 0)
+      .attr("dy", "1em")
+      .style("text-anchor" , "middle")
+      .text("Origin Country");
+
+
+
+
+
+var color = d3.scale.category20();
+
+
+
+function changed(thethis) {
+
+current_year = thethis.value;
+
+
+
+d3.json("poc.json", function(error, data) {
+
+
+
+  var o = d3.nest()
+  .key(function(d){
+    return d.Origin;
+  }).sortKeys(d3.ascending)
+  .rollup(function(leaves) {
+      return {
+          total_refugees: d3.sum(leaves, function(d) { if(d.Year == current_year)
+              return parseInt(d.Refugees);
+          })
+       }
+  })
+  .entries(data); 
+
+var o2 = d3.nest()
+  .key(function(d){
+    return d.Origin;
+  }).sortKeys(d3.ascending)
+  .rollup(function(leaves) {
+      var re = [];
+      re[0] = d3.sum(leaves, function(d) { if(d.Year == current_year && d.Residence == "Germany")
+              return parseInt(d.Refugees);
+          })
+
+      re[1] = d3.sum(leaves, function(d) { if(d.Year == current_year && d.Residence == "France")
+              return parseInt(d.Refugees);
+          })
+
+
+      re[2] = d3.sum(leaves, function(d) { if(d.Year == current_year && d.Residence == "United Kingdom")
+              return parseInt(d.Refugees);
+          })
+
+
+      re[3] = d3.sum(leaves, function(d) { if(d.Year == current_year && d.Residence == "Sweden")
+              return parseInt(d.Refugees);
+          })
+
+
+      re[4] = d3.sum(leaves, function(d) { if(d.Year == current_year && d.Residence == "Denmark")
+              return parseInt(d.Refugees);
+          })
+  return re;
+  
+  })
+  .entries(data);
+
+
+//document.write(JSON.stringify(o));
+//document.write(JSON.stringify(o2));
+
+
+rect.selectAll('rect')
+  .data(o)
+  .enter()
+  .append('rect')
+  .attr({
+    'width':function(d){
+      return wid(d.values.total_refugees)-150;
+     },
+    'height':10,
+    'fill': "blue",
+    'x':150,
+    'y':function(d, index){
+      return 100 + index*20;
+    }
+  });
+
+rect2.selectAll('rect')
+  .data(o2)
+  .enter()
+  .append('rect')
+  .attr({
+    'width':function(d){
+      return wid2(d.values[4])-150;
+     },
+    'height':10,
+    'fill':function(d){
+      
+         return "blue";
+
+    },
+    'x':150,
+    'y':function(d, index){
+      return 100 + index*80;
+    }
+  });
+
+rect3.selectAll('rect')
+  .data(o2)
+  .enter()
+  .append('rect')
+  .attr({
+    'width':function(d){
+      return wid2(d.values[3])-150;
+     },
+    'height':10,
+    'fill':function(d){
+      
+         return "orange";
+
+    },
+    'x':150,
+    'y':function(d, index){
+      return 110 + index*80;
+    }
+  });
+
+
+rect4.selectAll('rect')
+  .data(o2)
+  .enter()
+  .append('rect')
+  .attr({
+    'width':function(d){
+      return wid2(d.values[2])-150;
+     },
+    'height':10,
+    'fill':function(d){
+      
+         return "purple";
+
+    },
+    'x':150,
+    'y':function(d, index){
+      return 120 + index*80;
+    }
+  });
+
+rect5.selectAll('rect')
+  .data(o2)
+  .enter()
+  .append('rect')
+  .attr({
+    'width':function(d){
+      return wid2(d.values[1])-150;
+     },
+    'height':10,
+    'fill':function(d){
+      
+         return "green";
+
+    },
+    'x':150,
+    'y':function(d, index){
+      return 130 + index*80;
+    }
+  });
+
+rect6.selectAll('rect')
+  .data(o2)
+  .enter()
+  .append('rect')
+  .attr({
+    'width':function(d){
+      return wid2(d.values[0])-150;
+     },
+    'height':10,
+    'fill':function(d){
+      
+         return "red";
+
+    },
+    'x':150,
+    'y':function(d, index){
+      return 140 + index*80;
+    }
+  });
+
+
+
+var legenddata = ["Denmark", "Sweden", "United Kingdom", "France", "Germany"];
+
+
+var legend2 = s2.selectAll(".legend")
+      .data(legenddata)
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+
+
+  legend2.append('rect')
+      .attr("x", width-100)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", function(d,i){
+if(i==0) return "blue";
+else if(i==1) return "orange";
+else if(i==2) return "purple";
+else if(i==3) return "green";
+else if(i==4) return "red";
+});
+
+
+  
+legend2.append("text")
+      .attr("x", width - 110)
+      .attr("y", 10)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d){return d;});
+
+
+
+
+
+
+
+});
+
+
+}
+
+
+</script>
+
+
+
+
+</body>
+
+</html>
